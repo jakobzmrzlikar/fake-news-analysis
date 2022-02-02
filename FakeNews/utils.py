@@ -2,12 +2,16 @@ import os
 import json 
 
 
-def load_tweets(dir, truth, lst):
-    for tweet_file in os.list(dir):
-        with open(tweet_file) as f:
-            tweet = json.load(f)
+def load_tweets(path, truth, mode):
+    tweet_file = path + '/' + mode + '.json'
+    if not os.path.exists(tweet_file):
+        return []
+
+    with open(tweet_file) as f:
+        tweets = json.load(f)
+        for tweet in tweets:
             tweet["truth"] = truth
-            lst.append(tweet)
+    return tweets
 
 
 def collect_tweets(rootdir, get_retweets=False):
@@ -17,14 +21,15 @@ def collect_tweets(rootdir, get_retweets=False):
         dir = rootdir + '/' + truth
         for subdir in os.listdir(dir):
             
-            tweets_dir = dir + "/" + subdir + "/tweets"
-            tweets = load_tweets(tweets_dir, truth, tweets)
+            tweets_dir = dir + "/" + subdir
+            tweets += load_tweets(tweets_dir, truth, "tweets")
 
             if get_retweets:
-                retweets_dir = dir + "/" + subdir + "/retweets"
-                tweets = load_tweets(retweets_dir, truth, tweets)
+                retweets_dir = dir + "/" + subdir
+                tweets += load_tweets(retweets_dir, truth, "retweets")
     
-    return json.dumps(tweets)
+    return tweets
+
 
 def collect_news(rootdir):
     news = []
